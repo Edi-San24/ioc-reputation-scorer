@@ -5,4 +5,4 @@ __pycache__/
 .DS_Store
 models/
 data/
-test_iocs.txt
+test_iocs.txt*.log
