@@ -1,5 +1,0 @@
-185.220.101.45,ip
-d55f983c994caa160ec63a59f6b4250fe67fb3e8c43a388aec60a4a6978e9f1e,hash
-malware.com,domain
-google.com,domain
-8.8.8.8,ip
