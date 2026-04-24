@@ -6,3 +6,6 @@ __pycache__/
 models/
 data/
 test_iocs.txt*.log
+*.log
+test_feeds.py
+read.md
