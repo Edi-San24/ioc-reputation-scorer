@@ -5,9 +5,22 @@ from dotenv import load_dotenv
 
 #API Key 
 load_dotenv()
-OTX_API_KEY = os.getenv("OTX_API_KEY", "")
-VT_API_KEY = os.getenv("VT_API_KEY", "")
-ABUSECH_API_KEY = os.getenv("ABUSECH_API_KEY", "")
+
+def _get_secret(key):
+    """
+    Reads secrets from Streamlit Cloud or local .env file.
+    Streamlit secrets take priority over environment variables.
+    """
+    try:
+        import streamlit as st
+        return st.secrets.get(key, os.getenv(key, ""))
+    except Exception:
+        return os.getenv(key, "")
+
+OTX_API_KEY     = _get_secret("OTX_API_KEY")
+VT_API_KEY      = _get_secret("VT_API_KEY")
+ABUSECH_API_KEY = _get_secret("ABUSECH_API_KEY")
+
 
 #Directory Paths and Creation
 BASE_DIR = Path(__file__).parent
