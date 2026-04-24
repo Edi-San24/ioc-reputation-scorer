@@ -1,0 +1,78 @@
+{
+  "generated_at": "2026-04-16T19:12:08.830634",
+  "total_iocs": 1,
+  "severity_summary": {
+    "critical": 0,
+    "high": 0,
+    "medium": 1,
+    "low": 0
+  },
+  "records": [
+    {
+      "ioc": "185.220.101.45",
+      "ioc_type": "ip",
+      "sources": [
+        "otx",
+        "virustotal"
+      ],
+      "source_count": 2,
+      "pulse_count": 68,
+      "tags": [
+        "heralding",
+        "Brute-Force",
+        "cisco",
+        "dionaea",
+        "scanning",
+        "probing",
+        "malicious",
+        "LAMP",
+        "anonymization_network",
+        "cowrie",
+        "elasticpot",
+        "sip",
+        "Honeypot",
+        "suricata",
+        "webscanner, bruteforce, web app attack",
+        "SSH",
+        "webscan",
+        "p0f",
+        "tanner",
+        "tpot",
+        "mailoney",
+        "tor",
+        "sensor-tagged",
+        "sentrypeer",
+        "honeypot",
+        "fatt",
+        "Bruteforce",
+        "email",
+        "sftp",
+        "ssh",
+        "honeytrap"
+      ],
+      "malware_families": [
+        "https://ltna.com.au/cyber",
+        "phishing",
+        "malware",
+        "https://github.com/telekom-security/tpotce",
+        "malicious"
+      ],
+      "threat_actors": [],
+      "country": "DE",
+      "asn": "AS208294 cia triad security llc",
+      "first_seen": null,
+      "last_seen": null,
+      "file_type": null,
+      "queried_at": "2026-04-16T19:12:08.826427",
+      "reputation_score": 49.58,
+      "severity": "medium",
+      "score_components": {
+        "base_score": 74.7,
+        "source_confidence": 0.89,
+        "type_multiplier": 1.0,
+        "recency_decay": 0.75
+      },
+      "severity_color": "#FFD700"
+    }
+  ]
+}
