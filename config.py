@@ -60,7 +60,7 @@ VT_ENDPOINTS = {
     "url": "/urls/{ioc}",
 }
 
-VT_RATE_LIMIT_DELAY = 15 # seconds between requests
+VT_RATE_LIMIT_DELAY = 3 # seconds between requests
 
 #Scoring settings 
 IOC_TYPE_MULTIPLIERS = {
