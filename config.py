@@ -13,7 +13,9 @@ def _get_secret(key):
     """
     try:
         import streamlit as st
-        return st.secrets.get(key, os.getenv(key, ""))
+        if hasattr(st, 'secrets') and key in st.secrets:
+            return st.secrets[key]
+        return os.getenv(key, "")
     except Exception:
         return os.getenv(key, "")
 
