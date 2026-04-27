@@ -105,7 +105,7 @@ with st.sidebar:
 
     page = st.radio(
         "Navigation",
-        ["IOC Lookup", "Batch Analysis", "Visualizations", "Methodology"],
+        ["IOC Lookup", "Batch Analysis", "Visualizations", "Methodology", "Debug"],
         label_visibility="collapsed",
     )
 
@@ -567,4 +567,14 @@ elif page == "Methodology":
     | URLhaus | URLs, domains | Free API key |
     | Feodo Tracker | IPs (botnet C2) | None required |
     """)
+
+elif page == "Debug":
+    st.markdown("## Debug Info")
+    from config import OTX_API_KEY, VT_API_KEY, ABUSECH_API_KEY
+    st.write(f"OTX key loaded: {bool(OTX_API_KEY)}")
+    st.write(f"VT key loaded: {bool(VT_API_KEY)}")
+    st.write(f"ABUSECH key loaded: {bool(ABUSECH_API_KEY)}")
+
     
+    
+   
