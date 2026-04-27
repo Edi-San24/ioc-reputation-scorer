@@ -147,7 +147,7 @@ def severity_badge(severity, score):
     </div>
     """
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=300)
 def run_pipeline(ioc, ioc_type):
     """
     Runs the full pipeline for a single IOC.
