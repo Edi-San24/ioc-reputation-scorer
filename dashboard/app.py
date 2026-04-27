@@ -575,6 +575,18 @@ elif page == "Debug":
     st.write(f"VT key loaded: {bool(VT_API_KEY)}")
     st.write(f"ABUSECH key loaded: {bool(ABUSECH_API_KEY)}")
 
-    
+    if st.button("Test VT API"):
+        import requests
+        try:
+            response = requests.get(
+                "https://www.virustotal.com/api/v3/files/d55f983c994caa160ec63a59f6b4250fe67fb3e8c43a388aec60a4a6978e9f1e",
+                headers={"x-apikey": VT_API_KEY},
+                timeout = 30,
+            )
+            st.write(f"VT Status: {response.status_code}")
+            st.write(f"VT Response: {response.json().get('data', {}).get('attributes', {}).get('last_analysis_stats', {})}")
+        except Exception as e:
+            st.write(f"VT Error:{e}")
+
     
    
