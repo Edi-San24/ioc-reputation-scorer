@@ -237,7 +237,6 @@ if page == "IOC Lookup":
             with c5:
                 st.markdown('<p class="section-header">Behavioral Cluster</p>', unsafe_allow_html=True)
                 st.markdown(f"**Profile:** `{cluster.get('cluster_label', 'N/A')}`")
-                st.markdown(f"**Cluster ID:** `{cluster.get('cluster_id', 'N/A')}`")
             with c6:
                 st.markdown('<p class="section-header">Campaign Association</p>', unsafe_allow_html=True)
                 is_campaign = campaign.get("is_campaign", False)
