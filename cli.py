@@ -158,14 +158,16 @@ def print_results(scored_records, anomaly_results, cluster_results, campaign_res
             campaign_str,
             sources,
         )
+    if verbose:
+        components = record.get("score_components", {})
+        console.print(
+            f"  [dim]└ base={components.get('base_score')} "
+            f"confidence={components.get('source_confidence')} "
+            f"decay={components.get('recency_decay')} "
+            f"whois={components.get('whois_multiplier', 1.0)}[/dim]"
+        )
 
-        if verbose:
-            components = record.get("score_components", {})
-            console.print(
-                f"  [dim]└ base={components.get('base_score')} "
-                f"confidence={components.get('source_confidence')} "
-                f"decay={components.get('recency_decay')}[/dim]"
-            )
+        
 
     console.print(table)
 

@@ -32,7 +32,10 @@ signal_weights:
   tag_count: 0.15 # 15% of base score
   malware_family: 0.20 # 20% of base score
 
-
-
+# WHOIS risk multipliers
+whois_multipliers:
+  new_domain_30_days:  1.30   # Registered within 30 days
+  new_domain_90_days:  1.15   # Registered within 90 days
+  privacy_protected:   1.10   # Registration hidden behind privacy service
 
 

@@ -29,7 +29,7 @@ def _get_recency_decay(last_seen_str):
     Returns a float between 0.25 & 1.0.
     """
     if not last_seen_str:
-        return RECENCY_DECAY_FACTORS["stale"] # Unknown = treat as stale 
+        return RECENCY_DECAY_FACTORS["stale"]
     
     try:
         last_seen = datetime.fromisoformat(last_seen_str.replace("Z", "+00:00"))
@@ -50,28 +50,25 @@ def _get_recency_decay(last_seen_str):
         return RECENCY_DECAY_FACTORS["expired"]
 
 
-#Calculate base score 
 def _calculate_base_score(ioc_record):
     """
-    Calculating a base score from 0 - 100 using signal weights. 
-    Normalizes pulse count, source count, tag count, and malware families 
+    Calculating a base score from 0-100 using signal weights. 
+    Normalizes pulse count, source count, tag count, and malware families.
     """
-    #Normalize signals to 0-1 range
-    pulse_score = min(ioc_record.get("pulse_count", 0) / 100, 1.0)
-    source_score = min(ioc_record.get("source_count", 0) / 4, 1.0)
-    tag_score    = min(len(ioc_record.get("tags",[])) / 20, 1.0)
-    malware_score = min(len(ioc_record.get("malware_families", []))/ 5, 1.0)
+    pulse_score   = min(ioc_record.get("pulse_count", 0) / 100, 1.0)
+    source_score  = min(ioc_record.get("source_count", 0) / 4, 1.0)
+    tag_score     = min(len(ioc_record.get("tags", [])) / 20, 1.0)
+    malware_score = min(len(ioc_record.get("malware_families", [])) / 5, 1.0)
 
-    #Weighted sum of signals
     base_score = (
-        pulse_score * SIGNAL_WEIGHTS["pulse_count"] +
-        source_score * SIGNAL_WEIGHTS["source_count"] +
-        tag_score * SIGNAL_WEIGHTS["tag_count"] +
+        pulse_score   * SIGNAL_WEIGHTS["pulse_count"] +
+        source_score  * SIGNAL_WEIGHTS["source_count"] +
+        tag_score     * SIGNAL_WEIGHTS["tag_count"] +
         malware_score * SIGNAL_WEIGHTS["malware_family"]
     )
 
-    #Scale to 0-100
     return base_score * 100
+
    
 def _get_source_confidence(ioc_record):
     """
@@ -80,26 +77,26 @@ def _get_source_confidence(ioc_record):
     """
     sources = ioc_record.get("sources", [])
     if not sources:
-        return 0.5 # No sources = low confidence
+        return 0.5
     
     weights = [SOURCE_WEIGHTS.get(source, 0.5) for source in sources]
     return sum(weights) / len(weights)
 
+
 def score_ioc(ioc_record):
     """
     Main scoring function.
-    Takes a unified IOC record, and returns the same record with reputation score & severity label added. 
+    Takes a unified IOC record and returns it with reputation score and severity label added. 
     """
-
     if not ioc_record:
-        return None 
-    
+        return None
+
     from config import ALLOWLIST_DOMAINS, ALLOWLIST_IPS
-    ioc       = ioc_record.get("ioc", "")
-    ioc_type  = ioc_record.get("ioc_type", "ip")
+    ioc      = ioc_record.get("ioc", "")
+    ioc_type = ioc_record.get("ioc_type", "ip")
     last_seen = ioc_record.get("last_seen", None)
 
-    # Allowlist check — known legitimate infrastructure scores low regardless
+    # 1. Domain allowlist check
     if ioc_type == "domain" and ioc in ALLOWLIST_DOMAINS:
         ioc_record["reputation_score"] = 5.0
         ioc_record["severity"]         = "low"
@@ -107,6 +104,7 @@ def score_ioc(ioc_record):
         logger.info(f"Allowlisted domain: {ioc} -> 5.0 (low)")
         return ioc_record
 
+    # 2. IP allowlist check
     if ioc_type == "ip" and ioc in ALLOWLIST_IPS:
         ioc_record["reputation_score"] = 5.0
         ioc_record["severity"]         = "low"
@@ -114,19 +112,34 @@ def score_ioc(ioc_record):
         logger.info(f"Allowlisted IP: {ioc} -> 5.0 (low)")
         return ioc_record
 
-    # Get each component 
-    base_score     = _calculate_base_score(ioc_record)
+    # 3. WHOIS risk signals for domains
+    whois_multiplier = 1.0
+    if ioc_type == "domain":
+        domain_age = ioc_record.get("domain_age_days")
+        privacy    = ioc_record.get("privacy_protected", False)
+
+        if domain_age is not None:
+            if domain_age <= 30:
+                whois_multiplier *= 1.3
+            elif domain_age <= 90:
+                whois_multiplier *= 1.15
+
+        if privacy:
+            whois_multiplier *= 1.1
+
+    # 4. Calculate scoring components
+    base_score        = _calculate_base_score(ioc_record)
     source_confidence = _get_source_confidence(ioc_record)
-    type_multiplier = IOC_TYPE_MULTIPLIERS.get(ioc_type, 1.0)
-    recency_decay   = _get_recency_decay(last_seen)
+    type_multiplier   = IOC_TYPE_MULTIPLIERS.get(ioc_type, 1.0)
+    recency_decay     = _get_recency_decay(last_seen)
 
-    #Applying the full formula 
-    raw_score = base_score * source_confidence * type_multiplier * recency_decay
+    # 5. Apply full formula
+    raw_score = base_score * source_confidence * type_multiplier * recency_decay * whois_multiplier
 
-    #Cap at 100
+    # 6. Cap at 100
     final_score = min(round(raw_score, 2), 100.0)
 
-    #Determine severity label based on thresholds
+    # 7. Determine severity label
     if final_score >= SEVERITY_THRESHOLDS["critical"]:
         severity = "critical"
     elif final_score >= SEVERITY_THRESHOLDS["high"]:
@@ -136,15 +149,17 @@ def score_ioc(ioc_record):
     else:
         severity = "low"
 
-    #Add results back to record & return 
+    # 8. Add results back to record and return
     ioc_record["reputation_score"] = final_score
-    ioc_record["severity"] = severity
+    ioc_record["severity"]         = severity
     ioc_record["score_components"] = {
-        "base_score": round(base_score, 2),
+        "base_score":        round(base_score, 2),
         "source_confidence": round(source_confidence, 2),
-        "type_multiplier": type_multiplier,
-        "recency_decay": recency_decay,
+        "type_multiplier":   type_multiplier,
+        "recency_decay":     recency_decay,
+        "whois_multiplier":  whois_multiplier,
     }
 
     logger.info(f"Scored {ioc_record['ioc']} -> {final_score} ({severity})")
     return ioc_record
+

@@ -22,6 +22,7 @@ def _get_secret(key):
 OTX_API_KEY     = _get_secret("OTX_API_KEY")
 VT_API_KEY      = _get_secret("VT_API_KEY")
 ABUSECH_API_KEY = _get_secret("ABUSECH_API_KEY")
+WHOIS_API_KEY = _get_secret("WHOIS_API_KEY")
 
 
 #Directory Paths and Creation
@@ -79,6 +80,7 @@ SOURCE_WEIGHTS = {
     "urlhaus": 0.80,
     "feodo": 0.95,
     "virustotal": 0.92,
+     "whois": 0.70,
 }
 
 #Severity thresholds
