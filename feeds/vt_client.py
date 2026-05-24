@@ -71,12 +71,17 @@ class VirusTotalClient:
         """
         Queries VirusTotal for a single IOC
         Returns a normalized dictionary of threat intelligence data.
+        [Updated]: URLs are submitted first then looked up by analysis ID 
         """
         if ioc_type not in VT_ENDPOINTS:
             logger.error(f"Unsupported IOC type: {ioc_type}")
             return None
         
-        endpoint = VT_ENDPOINTS[ioc_type].format(ioc=ioc)
+        #URLs need to be submitted first then looked up by ID 
+        if ioc_type == "url":
+            return self._query_url(ioc)
+        
+        endpoint = VT_ENDPOINTS[ioc_type].format (ioc = ioc)
         url = f"{self.base_url}{endpoint}"
         logger.info(f"Querying VirusTotal for {ioc_type}: {ioc}")
 
@@ -85,6 +90,56 @@ class VirusTotalClient:
             return None
         
         return self._parse_response(data, ioc, ioc_type)
+        
+    def _query_url(self, url):
+        """
+        Submits a URL to VT and retrives its analysis 
+        """
+        import base64
+        import time
+
+        logger.info(f"Submitting URL to VirusTotal: {url}")
+
+        #Submit the URL 
+        url_id = self._submit_url(url)
+        if not url_id:
+            return None
+        
+        #Waiting for analysis to complete 
+        time.sleep(VT_RATE_LIMIT_DELAY)
+
+        #Look up by URL ID 
+        analysis_url = f"{self.base_url}/analyses/{url_id}"
+        data = self._make_request(analysis_url)
+        if not data:
+            return None
+        
+        return self._parse_response(data,url, "url")
+    
+    def _submit_url(self,url):
+        """
+        Submits a URL to VirusTotal for scanning
+        This is REQUIRED before looking up URLs that have not been seen before
+        """
+        import base64
+        submit_url = f"{self.base_url}/urls"
+        try:
+            response = requests.post(
+                submit_url,
+                headers = self.headers,
+                data = {"url" : url},
+                timeout = REQUEST_TIMEOUT
+            )
+            response.raise_for_status()
+            data = response.json()
+            return data.get("data", {}).get("id", None)
+        except Exception as e:
+            logger.error(f"VT URL submission failed: {e}")
+            return None 
+           
+
+            
+
     
 
 
