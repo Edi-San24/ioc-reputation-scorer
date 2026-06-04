@@ -16,6 +16,7 @@ from ml.clusterer import cluster_iocs
 from ml.campaign_classifier import classify_campaigns
 from reporting.report_builder import build_report, write_json_report, write_csv_report
 from config import LOG_LEVEL, LOG_FILE, SEVERITY_COLORS
+from reporting.stix_builder import write_stix_report
 
 console = Console()
 
@@ -158,13 +159,13 @@ def print_results(scored_records, anomaly_results, cluster_results, campaign_res
             campaign_str,
             sources,
         )
-    if verbose:
-        components = record.get("score_components", {})
-        console.print(
-            f"  [dim]└ base={components.get('base_score')} "
-            f"confidence={components.get('source_confidence')} "
-            f"decay={components.get('recency_decay')} "
-            f"whois={components.get('whois_multiplier', 1.0)}[/dim]"
+        if verbose:
+            components = record.get("score_components", {})
+            console.print(
+                f"  [dim]└ base={components.get('base_score')} "
+                f"confidence={components.get('source_confidence')} "
+                f"decay={components.get('recency_decay')} "
+                f"whois={components.get('whois_multiplier', 1.0)}[/dim]"
         )
 
         
@@ -228,6 +229,9 @@ def main():
         report = build_report(scored_records, anomaly_results, cluster_results, campaign_results)
         path   = write_json_report(report)
         console.print(f"\n[green]JSON report saved to:[/green] {path}")
+        stix_path = write_stix_report(scored_records, anomaly_results, cluster_results, campaign_results)
+        if stix_path:
+            console.print(f"[green]STIX report saved to:[/green] {stix_path}")
 
     if args.output in ("csv", "both"):
         report = build_report(scored_records, anomaly_results, cluster_results, campaign_results)
